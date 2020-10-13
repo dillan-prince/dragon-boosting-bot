@@ -3,7 +3,6 @@ import { Keys } from './config/index.js';
 
 const client = new Client();
 const keys = await Keys();
-console.log(keys);
 
 client.on('message', (message) => {
     const { content } = message;
