@@ -4,9 +4,14 @@
   "description": "Discord bot used to manage balances within the Dragon Boosting Community.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "node src/index.js"
   },
   "author": "Dillan Prince",
   "license": "ISC",
-  "repository": "https://github.com/dillan-prince/dragon-boosting-bot"
+  "repository": "https://github.com/dillan-prince/dragon-boosting-bot",
+  "dependencies": {
+    "discord.js": "^12.3.1",
+    "eslint-config-prettier": "^6.12.0"
+  },
+  "type": "module"
 }
