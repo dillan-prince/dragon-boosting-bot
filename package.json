@@ -4,7 +4,8 @@
   "description": "Discord bot used to manage balances within the Dragon Boosting Community.",
   "main": "index.js",
   "scripts": {
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "heroku-postbuild": "npm run start"
   },
   "author": "Dillan Prince",
   "license": "ISC",
