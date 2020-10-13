@@ -12,6 +12,7 @@ export const onMessage = (message) => {
     switch (command) {
         case 'addrun':
             addrunCommand(message.channel, args);
+            break;
         case 'add':
         case 'remove':
         case 'balance':
