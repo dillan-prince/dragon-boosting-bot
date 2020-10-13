@@ -1,4 +1,9 @@
-import { keys as devKeys } from './dev.js';
-import { keys as prodKeys } from './prod.js';
-
-export const keys = process.env.NODE_ENV === 'production' ? prodKeys : devKeys;
+export const Keys = async () => {
+    if (process.env.NODE_ENV === 'production') {
+        const prodKeys = await import('./prod.js');
+        return prodKeys.keys;
+    } else {
+        const devKeys = await import('./dev.js');
+        return devKeys.keys;
+    }
+};

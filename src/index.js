@@ -1,6 +1,9 @@
 import { Client } from 'discord.js';
-import { keys } from './config/index.js';
+import { Keys } from './config/index.js';
+
 const client = new Client();
+const keys = await Keys();
+console.log(keys);
 
 client.on('message', (message) => {
     const { content } = message;
