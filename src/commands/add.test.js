@@ -1,22 +1,44 @@
 import assert from 'assert';
-import { verifyArguments } from './add.js';
+import { validateArguments } from './add.js';
 
 describe('Add', () => {
     it('should throw an error if not provided exactly two arguments', () => {
         try {
-            verifyArguments([]);
+            validateArguments([]);
         } catch (error) {
             assert(error.toString() === 'Error: Expected two arguments.');
         }
     });
 
+    it('should throw an error if CustomerName argument is not a mention', () => {
+        try {
+            validateArguments(['CustomerName', 'goldAmount']);
+        } catch (error) {
+            assert(
+                error.toString() ===
+                    'Error: Expected user name in the format @Username; received "CustomerName"'
+            );
+        }
+    });
+
     it('should throw an error if goldAmount argument is not an integer', () => {
         try {
-            verifyArguments(['CustomerName', 'goldAmount']);
+            validateArguments(['<@CustomerName>', 'goldAmount']);
         } catch (error) {
             assert(
                 error.toString() ===
                     'Error: Expected an integer for the gold amount; received "goldAmount"'
+            );
+        }
+    });
+
+    it('should throw an error if goldAmount argument is negative', () => {
+        try {
+            validateArguments(['<@CustomerName>', '-1']);
+        } catch (error) {
+            assert(
+                error.toString() ===
+                    "Error: Expected a positive value for the gold amount. Use $remove to decrease a user's balance."
             );
         }
     });

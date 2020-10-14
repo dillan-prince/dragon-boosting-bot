@@ -1,12 +1,16 @@
 import { addCommand, addrunCommand } from '../commands/index.js';
+import { COMMAND_PREFIX } from '../common/constants.js';
 
-export const prefix = '$';
 export const onMessage = (message) => {
-    if (!message.content.startsWith(prefix) || message.author.bot) {
+    if (!message.content.startsWith(COMMAND_PREFIX) || message.author.bot) {
         return;
     }
 
-    const args = message.content.slice(prefix.length).trim().split(' ');
+    const args = message.content
+        .slice(COMMAND_PREFIX.length)
+        .trim()
+        .split(/ +/);
+
     const command = args.shift().toLowerCase();
 
     switch (command) {
@@ -18,7 +22,11 @@ export const onMessage = (message) => {
             break;
         case 'remove':
         case 'balance':
-            message.channel.send(`Valid command: ${command}`);
+            message.reply(`Valid command: ${command}`);
             break;
     }
+};
+
+export const onUnhandledRejection = (error) => {
+    return console.error('Uncaught Promise Rejection:', error);
 };
