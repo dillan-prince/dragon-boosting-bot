@@ -1,4 +1,4 @@
-import { addrunCommand } from '../commands/index.js';
+import { addCommand, addrunCommand } from '../commands/index.js';
 
 export const prefix = '$';
 export const onMessage = (message) => {
@@ -11,9 +11,11 @@ export const onMessage = (message) => {
 
     switch (command) {
         case 'addrun':
-            addrunCommand(message.channel, args);
+            addrunCommand(message, args);
             break;
         case 'add':
+            addCommand(message, args);
+            break;
         case 'remove':
         case 'balance':
             message.channel.send(`Valid command: ${command}`);
