@@ -42,12 +42,12 @@ export const validateArguments = (args) => {
 };
 
 /**
- *  Command: $add
+ *  Command: $remove
  *  Arguments:
  *      [Recipient Name]
  *      [Gold Amount in Thousands]
  */
-export const addCommand = async (message, args) => {
+export const removeCommand = async (message, args) => {
     try {
         const { userId, goldAmount } = validateArguments(args);
 
@@ -56,16 +56,21 @@ export const addCommand = async (message, args) => {
         });
 
         if (!user) {
-            await User.create({
-                userId,
-                balance: goldAmount
-            });
-        } else {
-            user.balance += goldAmount;
-            await user.save();
+            throw new Error(
+                `Not currently tracking a balance for <@${userId}>`
+            );
+        } else if (user.balance < goldAmount) {
+            throw new Error(
+                `<@${userId}> has a balance of ${user.balance}. Negative balances are not supported.`
+            );
         }
 
-        message.channel.send(`Added ${goldAmount}K to <@${userId}>'s balance.`);
+        user.balance -= goldAmount;
+        await user.save();
+
+        message.channel.send(
+            `Removed ${goldAmount}K from <@${userId}>'s balance.`
+        );
     } catch (error) {
         message.channel.send(error.toString());
     }

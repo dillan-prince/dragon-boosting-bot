@@ -1,4 +1,9 @@
-import { addCommand, addrunCommand } from '../commands/index.js';
+import {
+    addCommand,
+    addrunCommand,
+    balanceCommand,
+    removeCommand
+} from '../commands/index.js';
 import { COMMAND_PREFIX } from '../common/constants.js';
 
 export const onMessage = (message) => {
@@ -21,8 +26,10 @@ export const onMessage = (message) => {
             addCommand(message, args);
             break;
         case 'remove':
+            removeCommand(message, args);
+            break;
         case 'balance':
-            message.reply(`Valid command: ${command}`);
+            balanceCommand(message, args);
             break;
     }
 };
