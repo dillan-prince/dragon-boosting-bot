@@ -1,4 +1,5 @@
 import Sequelize from 'sequelize';
+import mysql from 'mysql2/promise';
 
 import { Keys } from '../config/index.js';
 
@@ -10,6 +11,15 @@ const {
     DATABASE_PORT
 } = await Keys();
 
+const connection = await mysql.createConnection({
+    host: DATABASE_HOST,
+    port: DATABASE_PORT,
+    user: DATABASE_USERNAME,
+    password: DATABASE_PASSWORD
+});
+
+await connection.query(`CREATE DATABASE IF NOT EXISTS ${DATABASE_NAME};`);
+
 const sequelize = new Sequelize(
     DATABASE_NAME,
     DATABASE_USERNAME,
@@ -17,30 +27,25 @@ const sequelize = new Sequelize(
     {
         host: DATABASE_HOST,
         port: DATABASE_PORT,
-        dialect: 'mysql'
+        dialect: 'mysql',
+        ssl: 'Amazon RDS'
     }
 );
 
-export const User = sequelize.define(
-    'User',
-    {
-        userId: {
-            type: Sequelize.DataTypes.STRING,
-            primaryKey: true
-        },
-        balance: {
-            type: Sequelize.DataTypes.INTEGER,
-            defaultValue: 0,
-            allowNull: false
-        }
+export const User = sequelize.define('User', {
+    userId: {
+        type: Sequelize.DataTypes.STRING,
+        primaryKey: true
     },
-    {
-        timestamps: false
+    balance: {
+        type: Sequelize.DataTypes.INTEGER,
+        defaultValue: 0,
+        allowNull: false
     }
-);
+});
 
 (async () => {
-    await sequelize.sync();
+    await sequelize.sync({ alter: true });
 })();
 
 export default sequelize;

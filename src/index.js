@@ -5,7 +5,8 @@ import { onMessage, onUnhandledRejection } from './listeners/index.js';
 
 const keys = await Keys();
 
+process.on('unhandledRejection', onUnhandledRejection);
+
 const client = new Client();
 client.on('message', onMessage);
-client.on('unhandledRejection', onUnhandledRejection);
 client.login(keys.DISCORD_TOKEN);

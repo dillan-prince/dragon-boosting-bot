@@ -35,5 +35,5 @@ export const onMessage = (message) => {
 };
 
 export const onUnhandledRejection = (error) => {
-    return console.error('Uncaught Promise Rejection:', error);
+    return console.error('Uncaught Promise Rejection:', error.toString());
 };
