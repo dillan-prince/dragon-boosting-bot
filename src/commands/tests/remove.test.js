@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { validateArguments } from './remove.js';
+import { validateArguments } from '../remove.js';
 
 describe('Remove', () => {
     it('should throw an error if not provided exactly two arguments', () => {

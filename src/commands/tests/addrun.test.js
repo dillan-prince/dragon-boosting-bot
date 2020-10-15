@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { verifyArguments } from './addrun.js';
+import { verifyArguments } from '../addrun.js';
 
 describe('AddRun', () => {
     it('should throw an error if not provided at least 5 arguments', () => {

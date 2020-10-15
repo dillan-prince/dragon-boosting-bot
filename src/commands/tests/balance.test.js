@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { validateArguments } from './balance.js';
+import { validateArguments } from '../balance.js';
 
 describe('Balance', () => {
     it('should throw an error if provided more than one argument', () => {
