@@ -1,11 +1,12 @@
 import { User } from '../database/dbConnection.js';
+import { writeToGoogleSheet } from '../services/googleSheetsService.js';
 
 export const validateArguments = (args) => {
-    if (args.length !== 2) {
-        throw new Error('Expected two arguments.');
+    if (args.length < 2) {
+        throw new Error('Expected at least two arguments.');
     }
 
-    const [mentionedUsername, goldAmount] = args;
+    const [mentionedUsername, goldAmount, ...rest] = args;
     const validatedArguments = {};
 
     if (
@@ -38,6 +39,8 @@ export const validateArguments = (args) => {
         validatedArguments.goldAmount = goldAmountInt;
     }
 
+    validatedArguments.reason = rest.join(' ');
+
     return validatedArguments;
 };
 
@@ -48,30 +51,34 @@ export const validateArguments = (args) => {
  *      [Gold Amount in Thousands]
  */
 export const removeCommand = async (message, args) => {
-    try {
-        const { userId, goldAmount } = validateArguments(args);
+    const { userId: mentionId, goldAmount, reason } = validateArguments(args);
 
-        const user = await User.findOne({
-            where: { userId }
-        });
+    const user = await User.findOne({
+        where: { userId: mentionId }
+    });
 
-        if (!user) {
-            throw new Error(
-                `Not currently tracking a balance for <@${userId}>`
-            );
-        } else if (user.balance < goldAmount) {
-            throw new Error(
-                `<@${userId}> has a balance of ${user.balance}. Negative balances are not supported.`
-            );
-        }
-
-        user.balance -= goldAmount;
-        await user.save();
-
-        message.channel.send(
-            `Removed ${goldAmount}K from <@${userId}>'s balance.`
+    if (!user) {
+        throw new Error(`Not currently tracking a balance for <@${mentionId}>`);
+    } else if (user.balance < goldAmount) {
+        throw new Error(
+            `<@${mentionId}> has a balance of ${user.balance}. Negative balances are not supported.`
         );
-    } catch (error) {
-        message.channel.send(error.toString());
     }
+
+    user.balance -= goldAmount;
+    await user.save();
+
+    message.channel.send(
+        `Removed ${goldAmount}K from <@${mentionId}>'s balance. New balance is ${user.balance}K.`
+    );
+
+    const authorName = message.author.username;
+    const mentionName = message.mentions.users.get(mentionId).username;
+
+    writeToGoogleSheet({
+        user: authorName,
+        recipient: mentionName,
+        amount: -goldAmount,
+        reason
+    });
 };

@@ -1,10 +1,10 @@
 import assert from 'assert';
-import { verifyArguments } from '../addrun.js';
+import { validateArguments } from '../addrun.js';
 
 describe('AddRun', () => {
     it('should throw an error if not provided at least 5 arguments', () => {
         try {
-            verifyArguments([]);
+            validateArguments([]);
         } catch (error) {
             assert(
                 error.toString() === 'Error: Expected at least 5 arguments.'
@@ -14,7 +14,7 @@ describe('AddRun', () => {
 
     it('should throw an error if goldAmount argument is not an integer', () => {
         try {
-            verifyArguments([
+            validateArguments([
                 'CustomerName',
                 'goldAmount',
                 'realm-faction',
@@ -31,7 +31,7 @@ describe('AddRun', () => {
 
     it('should throw an error if realm/faction are not formatted correctly', () => {
         try {
-            verifyArguments([
+            validateArguments([
                 'CustomerName',
                 '100',
                 'realmfaction',
@@ -48,7 +48,7 @@ describe('AddRun', () => {
 
     it('should throw an error if faction is not "A" or "H"', () => {
         try {
-            verifyArguments([
+            validateArguments([
                 'CustomerName',
                 '100',
                 'realm-faction',
@@ -65,7 +65,7 @@ describe('AddRun', () => {
 
     it('should throw an error if run type is not "M+", "Raid", or "PvP"', () => {
         try {
-            verifyArguments([
+            validateArguments([
                 'CustomerName',
                 '100',
                 'realm-A',
@@ -82,7 +82,7 @@ describe('AddRun', () => {
 
     it("should throw an error if run type is 'M+' and didn't receive 4 booster names", () => {
         try {
-            verifyArguments([
+            validateArguments([
                 'CustomerName',
                 '100',
                 'realm-A',
@@ -99,7 +99,7 @@ describe('AddRun', () => {
 
     it("should throw an error if run type is 'Raid' and didn't receive 1 booster name", () => {
         try {
-            verifyArguments([
+            validateArguments([
                 'CustomerName',
                 '100',
                 'realm-A',
@@ -117,7 +117,7 @@ describe('AddRun', () => {
 
     it("should throw an error if run type is 'PvP' and didn't receive 1-2 booster names", () => {
         try {
-            verifyArguments([
+            validateArguments([
                 'CustomerName',
                 '100',
                 'realm-A',
@@ -130,6 +130,24 @@ describe('AddRun', () => {
             assert(
                 error.toString() ===
                     'Error: Expected 1 or 2 booster name arguments; received 3'
+            );
+        }
+    });
+
+    it('should throw an error if a booster name is not a mention', () => {
+        try {
+            validateArguments([
+                'CustomerName',
+                '100',
+                'realm-A',
+                'pvp',
+                'boosterName1',
+                'boosterName2'
+            ]);
+        } catch (error) {
+            assert(
+                error.toString() ===
+                    'Error: Expected user name in the format @Username; received "boosterName1"'
             );
         }
     });

@@ -48,25 +48,23 @@ export const validateArguments = (args) => {
  *      [Gold Amount in Thousands]
  */
 export const addCommand = async (message, args) => {
-    try {
-        const { userId, goldAmount } = validateArguments(args);
+    const { userId, goldAmount } = validateArguments(args);
 
-        const user = await User.findOne({
-            where: { userId }
+    const user = await User.findOne({
+        where: { userId }
+    });
+
+    if (!user) {
+        await User.create({
+            userId,
+            balance: goldAmount
         });
-
-        if (!user) {
-            await User.create({
-                userId,
-                balance: goldAmount
-            });
-        } else {
-            user.balance += goldAmount;
-            await user.save();
-        }
-
-        message.channel.send(`Added ${goldAmount}K to <@${userId}>'s balance.`);
-    } catch (error) {
-        message.channel.send(error.toString());
+    } else {
+        user.balance += goldAmount;
+        await user.save();
     }
+
+    message.channel.send(
+        `Added ${goldAmount}K to <@${userId}>'s balance. New balance is ${user.balance}K.`
+    );
 };

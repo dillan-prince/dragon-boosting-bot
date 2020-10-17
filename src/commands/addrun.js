@@ -1,4 +1,4 @@
-export const verifyArguments = (args) => {
+export const validateArguments = (args) => {
     if (args.length < 5) {
         throw new Error('Expected at least 5 arguments.');
     }
@@ -54,12 +54,29 @@ export const verifyArguments = (args) => {
         }
     }
 
+    const boosterUserIds = [];
+    boosterNames.forEach((boosterName) => {
+        if (!boosterName.startsWith('<@') || !boosterName.endsWith('>')) {
+            throw new Error(
+                `Expected user name in the format @Username; received "${boosterName}"`
+            );
+        } else {
+            let userId = boosterName.slice(2, -1);
+
+            if (userId.startsWith('!')) {
+                userId = userId.slice(1);
+            }
+
+            boosterUserIds.push(userId);
+        }
+    });
+
     return {
         customerName,
         goldAmount,
         realm,
         runType,
-        boosterNames
+        boosterUserIds
     };
 };
 
@@ -77,19 +94,17 @@ export const verifyArguments = (args) => {
  *              PvP: 1-2 names, one for each booster in a 2v2 or 3v3 group.
  */
 export const addrunCommand = (message, args) => {
-    try {
-        const {
-            customerName,
-            goldAmount,
-            realm,
-            runType,
-            boosterNames
-        } = verifyArguments(args);
+    const {
+        customerName,
+        goldAmount,
+        realm,
+        runType,
+        boosterUserIds
+    } = validateArguments(args);
 
-        message.channel.send(
-            `Customer "${customerName}" paid ${goldAmount}K gold on ${realm} for a run of type "${runType}", performed by ${boosterNames}. Correct?`
-        );
-    } catch (error) {
-        message.channel.send(error.toString());
-    }
+    message.channel.send(
+        `Customer "${customerName}" paid ${goldAmount}K gold on ${realm} for a run of type "${runType}", performed by ${boosterUserIds
+            .map((boosterUserId) => `<@${boosterUserId}>`)
+            .join(', ')}. Correct?`
+    );
 };

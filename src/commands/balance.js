@@ -35,26 +35,22 @@ export const validateArguments = (args) => {
  *      [User Name] - Optional
  */
 export const balanceCommand = async (message, args) => {
-    try {
-        let userId = validateArguments(args);
+    let userId = validateArguments(args);
 
-        if (!userId) {
-            userId = message.author.id;
-        }
-
-        const user = await User.findOne({
-            where: { userId }
-        });
-
-        let balance = 0;
-        if (!user) {
-            await User.create({ userId });
-        } else {
-            balance = user.balance;
-        }
-
-        message.channel.send(`<@${userId}>'s balance is ${balance}K.`);
-    } catch (error) {
-        message.channel.send(error.toString());
+    if (!userId) {
+        userId = message.author.id;
     }
+
+    const user = await User.findOne({
+        where: { userId }
+    });
+
+    let balance = 0;
+    if (!user) {
+        await User.create({ userId });
+    } else {
+        balance = user.balance;
+    }
+
+    message.channel.send(`<@${userId}>'s balance is ${balance}K.`);
 };

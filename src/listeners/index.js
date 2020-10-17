@@ -18,19 +18,23 @@ export const onMessage = (message) => {
 
     const command = args.shift().toLowerCase();
 
-    switch (command) {
-        case 'addrun':
-            addrunCommand(message, args);
-            break;
-        case 'add':
-            addCommand(message, args);
-            break;
-        case 'remove':
-            removeCommand(message, args);
-            break;
-        case 'balance':
-            balanceCommand(message, args);
-            break;
+    try {
+        switch (command) {
+            case 'addrun':
+                addrunCommand(message, args);
+                break;
+            case 'add':
+                addCommand(message, args);
+                break;
+            case 'remove':
+                removeCommand(message, args);
+                break;
+            case 'balance':
+                balanceCommand(message, args);
+                break;
+        }
+    } catch (error) {
+        message.channel.send(error.toString());
     }
 };
 

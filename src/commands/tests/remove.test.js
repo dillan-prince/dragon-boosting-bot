@@ -2,11 +2,13 @@ import assert from 'assert';
 import { validateArguments } from '../remove.js';
 
 describe('Remove', () => {
-    it('should throw an error if not provided exactly two arguments', () => {
+    it('should throw an error if not provided at least two arguments', () => {
         try {
             validateArguments([]);
         } catch (error) {
-            assert(error.toString() === 'Error: Expected two arguments.');
+            assert(
+                error.toString() === 'Error: Expected at least two arguments.'
+            );
         }
     });
 
@@ -41,5 +43,15 @@ describe('Remove', () => {
                     "Error: Expected a positive value for the gold amount. Use $remove to decrease a user's balance."
             );
         }
+    });
+
+    it('should concatenate remaining arguments into a reason string', () => {
+        const { reason } = validateArguments([
+            '<@CustomerName>',
+            '1',
+            'test',
+            'reason'
+        ]);
+        assert(reason === 'test reason');
     });
 });
