@@ -15,11 +15,25 @@ const jwtClient = new google.auth.JWT(
 );
 
 export const writeToDebitsSheet = (rowData) => {
-    writeToSheet('Debits', [...Object.values(rowData), 'FALSE']);
+    writeToSheet('Debits', [
+        new Intl.DateTimeFormat('en-US', {
+            dateStyle: 'short',
+            timeStyle: 'medium',
+            timeZone: 'America/New_York'
+        }).format(new Date()),
+        ...Object.values(rowData)
+    ]);
 };
 
 export const writeToCreditsSheet = (rowData) => {
-    writeToSheet('Credits', [...Object.values(rowData), 'FALSE']);
+    writeToSheet('Credits', [
+        new Intl.DateTimeFormat('en-US', {
+            dateStyle: 'short',
+            timeStyle: 'medium',
+            timeZone: 'America/New_York'
+        }).format(new Date()),
+        ...Object.values(rowData)
+    ]);
 };
 
 export const writeToSheet = async (sheetName, values) => {
