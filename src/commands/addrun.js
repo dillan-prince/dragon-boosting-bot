@@ -145,13 +145,8 @@ export const addrunCommand = async (message, args) => {
             return message.reply('you are not allowed to use this command.');
         }
 
-        const {
-            customerName,
-            goldAmount,
-            realm,
-            runType,
-            boosterUserIds
-        } = validateArguments(args);
+        const validatedArgs = validateArguments(args);
+        const { goldAmount, realm, runType, boosterUserIds } = validatedArgs;
 
         let { percentageCut: advertiserPercentageCut } = (await Role.findOne({
             where: {
@@ -189,17 +184,28 @@ export const addrunCommand = async (message, args) => {
             );
         }
 
+        let { customerName } = validatedArgs;
+        if (customerName.startsWith('<@') && customerName.endsWith('>')) {
+            customerName = customerName.slice(2, -1);
+
+            if (customerName.startsWith('!')) {
+                customerName = customerName.slice(1);
+            }
+
+            const member = message.guild.members.cache.get(customerName);
+            customerName = member.nickname || member.user.username;
+        }
+
         writeToCreditsSheet([
             message.author.username,
             customerName,
             realm,
             goldAmount,
             runType,
-            ...boosterUserIds.map(
-                (userId) =>
-                    message.guild.members.cache.get(userId).nickname ||
-                    message.guild.members.cache.get(userId).user.username
-            )
+            ...boosterUserIds.map((userId) => {
+                const member = message.guild.members.cache.get(userId);
+                return member.nickname || member.user.username;
+            })
         ]);
     } catch (error) {
         message.channel.send(error.toString());
