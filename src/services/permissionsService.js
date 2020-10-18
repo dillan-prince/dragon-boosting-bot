@@ -5,7 +5,7 @@ export const hasPermission = (message, permittedRoles) => {
             (roleId) => message.channel.guild.roles.cache.get(roleId).name
         );
 
-    return permittedRoles.some((permittedRole) => {
-        authorRoles.includes(permittedRole);
-    });
+    return permittedRoles.some((permittedRole) =>
+        authorRoles.includes(permittedRole)
+    );
 };
