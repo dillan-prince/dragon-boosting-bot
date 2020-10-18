@@ -6,8 +6,8 @@ export const validateArguments = (args) => {
         throw new Error('Expected at least two arguments.');
     }
 
-    const [mentionedUsername, goldAmount] = args;
-    const validatedArguments = {};
+    const [mentionedUsername, goldAmount, ...rest] = args;
+    const validatedArguments = { rest };
 
     if (
         !mentionedUsername.startsWith('<@') ||
@@ -39,6 +39,8 @@ export const validateArguments = (args) => {
         validatedArguments.goldAmount = goldAmountInt;
     }
 
+    validatedArguments.reason = rest.join(' ');
+
     return validatedArguments;
 };
 
@@ -54,7 +56,7 @@ export const addCommand = async (message, args) => {
             return message.reply('you are not allowed to use this command.');
         }
 
-        const { userId, goldAmount } = validateArguments(args);
+        const { userId, goldAmount, reason } = validateArguments(args);
 
         const user = await User.findOne({
             where: { userId }
@@ -73,7 +75,7 @@ export const addCommand = async (message, args) => {
         message.mentions.users
             .get(userId)
             .send(
-                `${message.author.username} added ${goldAmount}K to your balance. New balance is ${user.balance}K.`
+                `${message.author.username} added ${goldAmount}K to your balance. New balance is ${user.balance}K. Reason: ${reason}`
             );
         message.delete();
     } catch (error) {

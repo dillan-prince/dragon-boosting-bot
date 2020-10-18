@@ -33,7 +33,7 @@ export const validateArguments = (args) => {
         }
     }
 
-    if (!['m+', 'raid', 'pvp'].includes(runType.toLowerCase())) {
+    if (!['bm+', 'm+', 'raid', 'pvp'].includes(runType.toLowerCase())) {
         throw new Error(
             `Expected run type to be one of "M+", "Raid", or "PvP"; received "${runType}"`
         );
@@ -153,7 +153,7 @@ export const addrunCommand = async (message, args) => {
             boosterUserIds
         } = validateArguments(args);
 
-        const advertiserRole = (await Role.findOne({
+        let { percentageCut: advertiserPercentageCut } = (await Role.findOne({
             where: {
                 name: message.channel.guild.members.cache
                     .get(message.author.id)
@@ -172,9 +172,13 @@ export const addrunCommand = async (message, args) => {
             }
         })) || { percentageCut: 0 };
 
+        if (runType.toLowerCase() === 'bm+') {
+            advertiserPercentageCut -= BOOSTER_PERCENTAGE_DISCOUNT;
+        }
+
         await upsertUserBalance(
             message.author.id,
-            (goldAmount * advertiserRole.percentageCut) / 100
+            (goldAmount * advertiserPercentageCut) / 100
         );
 
         const boosterPercentageCut = getBoosterPercentageCut(runType);
