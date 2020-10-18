@@ -77,16 +77,12 @@ export const removeCommand = async (message, args) => {
             .send(
                 `${message.author.username} removed ${goldAmount}K from your balance. New balance is ${user.balance}K.`
             );
+        message.delete();
 
         const authorName = message.author.username;
         const mentionName = message.mentions.users.get(userId).username;
 
-        writeToDebitsSheet({
-            user: authorName,
-            recipient: mentionName,
-            amount: -goldAmount,
-            reason
-        });
+        writeToDebitsSheet([authorName, mentionName, -goldAmount, reason]);
     } catch (error) {
         message.channel.send(error.toString());
     }

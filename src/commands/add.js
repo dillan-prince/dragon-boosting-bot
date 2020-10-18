@@ -2,8 +2,8 @@ import { User } from '../database/dbConnection.js';
 import { hasPermission } from '../services/permissionsService.js';
 
 export const validateArguments = (args) => {
-    if (args.length !== 2) {
-        throw new Error('Expected two arguments.');
+    if (args.length < 2) {
+        throw new Error('Expected at least two arguments.');
     }
 
     const [mentionedUsername, goldAmount] = args;
@@ -75,6 +75,7 @@ export const addCommand = async (message, args) => {
             .send(
                 `${message.author.username} added ${goldAmount}K to your balance. New balance is ${user.balance}K.`
             );
+        message.delete();
     } catch (error) {
         message.channel.send(error.toString());
     }

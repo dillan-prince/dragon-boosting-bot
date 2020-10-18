@@ -1,6 +1,7 @@
 import {
     addCommand,
     addrunCommand,
+    allBalancesCommand,
     balanceCommand,
     removeCommand
 } from '../commands/index.js';
@@ -30,6 +31,9 @@ export const onMessage = (message) => {
             break;
         case 'balance':
             balanceCommand(message, args);
+            break;
+        case 'allbalances':
+            allBalancesCommand(message, args);
             break;
     }
 };

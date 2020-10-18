@@ -2,11 +2,13 @@ import assert from 'assert';
 import { validateArguments } from '../add.js';
 
 describe('Add', () => {
-    it('should throw an error if not provided exactly two arguments', () => {
+    it('should throw an error if not provided at least two arguments', () => {
         try {
             validateArguments([]);
         } catch (error) {
-            assert(error.toString() === 'Error: Expected two arguments.');
+            assert(
+                error.toString() === 'Error: Expected at least two arguments.'
+            );
         }
     });
 

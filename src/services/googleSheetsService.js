@@ -21,7 +21,7 @@ export const writeToDebitsSheet = (rowData) => {
             timeStyle: 'medium',
             timeZone: 'America/New_York'
         }).format(new Date()),
-        ...Object.values(rowData)
+        ...rowData
     ]);
 };
 
@@ -32,7 +32,7 @@ export const writeToCreditsSheet = (rowData) => {
             timeStyle: 'medium',
             timeZone: 'America/New_York'
         }).format(new Date()),
-        ...Object.values(rowData)
+        ...rowData
     ]);
 };
 

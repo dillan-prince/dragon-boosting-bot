@@ -185,16 +185,18 @@ export const addrunCommand = async (message, args) => {
             );
         }
 
-        writeToCreditsSheet({
-            user: message.author.username,
-            customer: customerName,
+        writeToCreditsSheet([
+            message.author.username,
+            customerName,
             realm,
-            amount: goldAmount,
-            type: runType,
-            boosters: boosterUserIds
-                .map((userId) => message.mentions.users.get(userId).username)
-                .join(', ')
-        });
+            goldAmount,
+            runType,
+            ...boosterUserIds.map(
+                (userId) =>
+                    message.guild.members.cache.get(userId).nickname ||
+                    message.guild.members.cache.get(userId).user.username
+            )
+        ]);
     } catch (error) {
         message.channel.send(error.toString());
     }

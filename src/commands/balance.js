@@ -60,6 +60,7 @@ export const balanceCommand = async (message, args) => {
         }
 
         message.author.send(`<@${userId}>'s balance is ${user.balance}K.`);
+        message.delete();
     } catch (error) {
         message.channel.send(error.toString());
     }
