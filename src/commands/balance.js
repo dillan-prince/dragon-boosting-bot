@@ -1,4 +1,5 @@
 import { User } from '../database/dbConnection.js';
+import { hasPermission } from '../services/permissionsService.js';
 
 export const validateArguments = (args) => {
     if (args.length > 1) {
@@ -35,22 +36,31 @@ export const validateArguments = (args) => {
  *      [User Name] - Optional
  */
 export const balanceCommand = async (message, args) => {
-    let userId = validateArguments(args);
+    try {
+        let userId = validateArguments(args);
 
-    if (!userId) {
-        userId = message.author.id;
+        if (!userId) {
+            userId = message.author.id;
+        } else if (
+            !hasPermission(message, ['Chromatic Dragon', 'Gold Dragon'])
+        ) {
+            return message.reply(
+                'you may only use the `$balance` command without any arguments.'
+            );
+        }
+
+        const user = await User.findOne({
+            where: { userId }
+        });
+
+        if (!user) {
+            throw new Error(
+                `Not currently tracking a balance for <@${userId}>`
+            );
+        }
+
+        message.author.send(`<@${userId}>'s balance is ${user.balance}K.`);
+    } catch (error) {
+        message.channel.send(error.toString());
     }
-
-    const user = await User.findOne({
-        where: { userId }
-    });
-
-    let balance = 0;
-    if (!user) {
-        await User.create({ userId });
-    } else {
-        balance = user.balance;
-    }
-
-    message.channel.send(`<@${userId}>'s balance is ${balance}K.`);
 };

@@ -1,4 +1,5 @@
 import { User } from '../database/dbConnection.js';
+import { hasPermission } from '../services/permissionsService.js';
 
 export const validateArguments = (args) => {
     if (args.length !== 2) {
@@ -48,23 +49,33 @@ export const validateArguments = (args) => {
  *      [Gold Amount in Thousands]
  */
 export const addCommand = async (message, args) => {
-    const { userId, goldAmount } = validateArguments(args);
+    try {
+        if (!hasPermission(message, ['Gold Dragon', 'Chromatic Dragon'])) {
+            return message.reply('you are not allowed to use this command.');
+        }
 
-    const user = await User.findOne({
-        where: { userId }
-    });
+        const { userId, goldAmount } = validateArguments(args);
 
-    if (!user) {
-        await User.create({
-            userId,
-            balance: goldAmount
+        const user = await User.findOne({
+            where: { userId }
         });
-    } else {
-        user.balance += goldAmount;
-        await user.save();
-    }
 
-    message.channel.send(
-        `Added ${goldAmount}K to <@${userId}>'s balance. New balance is ${user.balance}K.`
-    );
+        if (!user) {
+            await User.create({
+                userId,
+                balance: goldAmount
+            });
+        } else {
+            user.balance += goldAmount;
+            await user.save();
+        }
+
+        message.mentions.users
+            .get(userId)
+            .send(
+                `${message.author.username} added ${goldAmount}K to your balance. New balance is ${user.balance}K.`
+            );
+    } catch (error) {
+        message.channel.send(error.toString());
+    }
 };

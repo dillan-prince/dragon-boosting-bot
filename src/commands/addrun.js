@@ -1,3 +1,12 @@
+import { User, Role } from '../database/dbConnection.js';
+import { writeToCreditsSheet } from '../services/googleSheetsService.js';
+import { hasPermission } from '../services/permissionsService.js';
+import {
+    DUNGEON_BOOSTER_PERCENTAGE_CUT,
+    RAID_BOOSTER_PERCENTAGE_CUT,
+    BOOSTER_PERCENTAGE_DISCOUNT
+} from '../common/constants.js';
+
 export const validateArguments = (args) => {
     if (args.length < 5) {
         throw new Error('Expected at least 5 arguments.');
@@ -30,6 +39,7 @@ export const validateArguments = (args) => {
         );
     } else {
         switch (runType.toLowerCase()) {
+            case 'bm+':
             case 'm+':
                 if (boosterNames.length !== 4) {
                     throw new Error(
@@ -80,6 +90,33 @@ export const validateArguments = (args) => {
     };
 };
 
+const upsertUserBalance = async (userId, addAmount) => {
+    const user = await User.findOne({
+        where: { userId }
+    });
+
+    if (!user) {
+        await User.create({ userId, balance: addAmount });
+    } else {
+        user.balance += addAmount;
+        await user.save();
+    }
+};
+
+const getBoosterPercentageCut = (runType) => {
+    switch (runType.toLowerCase()) {
+        case 'bm+':
+        case 'm+':
+            return DUNGEON_BOOSTER_PERCENTAGE_CUT;
+        case 'raid':
+            return RAID_BOOSTER_PERCENTAGE_CUT;
+        case 'pvp':
+
+        default:
+            return 0;
+    }
+};
+
 /**
  *  Command: $addrun
  *  Arguments:
@@ -93,18 +130,72 @@ export const validateArguments = (args) => {
  *              Raid: 1 name, the name of the team that performed the carry.
  *              PvP: 1-2 names, one for each booster in a 2v2 or 3v3 group.
  */
-export const addrunCommand = (message, args) => {
-    const {
-        customerName,
-        goldAmount,
-        realm,
-        runType,
-        boosterUserIds
-    } = validateArguments(args);
+export const addrunCommand = async (message, args) => {
+    try {
+        if (
+            !hasPermission(message, [
+                'White Dragon',
+                'Blue Dragon',
+                'Green Dragon',
+                'Red Dragon',
+                'Gold Dragon',
+                'Chromatic Dragon'
+            ])
+        ) {
+            return message.reply('you are not allowed to use this command.');
+        }
 
-    message.channel.send(
-        `Customer "${customerName}" paid ${goldAmount}K gold on ${realm} for a run of type "${runType}", performed by ${boosterUserIds
-            .map((boosterUserId) => `<@${boosterUserId}>`)
-            .join(', ')}. Correct?`
-    );
+        const {
+            customerName,
+            goldAmount,
+            realm,
+            runType,
+            boosterUserIds
+        } = validateArguments(args);
+
+        const advertiserRole = (await Role.findOne({
+            where: {
+                name: message.channel.guild.members.cache
+                    .get(message.author.id)
+                    ._roles.map(
+                        (roleId) =>
+                            message.channel.guild.roles.cache.get(roleId).name
+                    )
+                    .find((roleName) =>
+                        [
+                            'White Dragon',
+                            'Blue Dragon',
+                            'Green Dragon',
+                            'Red Dragon'
+                        ].includes(roleName)
+                    )
+            }
+        })) || { percentageCut: 0 };
+
+        await upsertUserBalance(
+            message.author.id,
+            (goldAmount * advertiserRole.percentageCut) / 100
+        );
+
+        const boosterPercentageCut = getBoosterPercentageCut(runType);
+        for (const boosterUserId of boosterUserIds) {
+            await upsertUserBalance(
+                boosterUserId,
+                (goldAmount * boosterPercentageCut) / 100
+            );
+        }
+
+        writeToCreditsSheet({
+            user: message.author.username,
+            customer: customerName,
+            realm,
+            amount: goldAmount,
+            type: runType,
+            boosters: boosterUserIds
+                .map((userId) => message.mentions.users.get(userId).username)
+                .join(', ')
+        });
+    } catch (error) {
+        message.channel.send(error.toString());
+    }
 };

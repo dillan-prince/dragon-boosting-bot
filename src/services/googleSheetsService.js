@@ -14,22 +14,24 @@ const jwtClient = new google.auth.JWT(
     ['https://www.googleapis.com/auth/spreadsheets']
 );
 
-export const writeToGoogleSheet = async ({
-    user,
-    recipient,
-    amount,
-    reason
-}) => {
+export const writeToDebitsSheet = (rowData) => {
+    writeToSheet('Debits', [...Object.values(rowData), 'FALSE']);
+};
+
+export const writeToCreditsSheet = (rowData) => {
+    writeToSheet('Credits', [...Object.values(rowData), 'FALSE']);
+};
+
+export const writeToSheet = async (sheetName, values) => {
     await jwtClient.authorize();
     google.sheets('v4').spreadsheets.values.append({
         auth: jwtClient,
         spreadsheetId: GOOGLE_SHEET_ID,
-        range: 'Sheet1!A1:A1',
+        range: `${sheetName}!A1:A1`,
         valueInputOption: 'USER_ENTERED',
         insertDataOption: 'OVERWRITE',
-        includeValuesInResponse: true,
         resource: {
-            values: [[user, recipient, amount, reason, 'FALSE']]
+            values: [values]
         }
     });
 };

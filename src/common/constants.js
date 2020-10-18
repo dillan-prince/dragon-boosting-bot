@@ -1,1 +1,4 @@
 export const COMMAND_PREFIX = '$';
+export const BOOSTER_PERCENTAGE_DISCOUNT = 10;
+export const DUNGEON_BOOSTER_PERCENTAGE_CUT = 17;
+export const RAID_BOOSTER_PERCENTAGE_CUT = 70;

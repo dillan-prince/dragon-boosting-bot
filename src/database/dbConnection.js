@@ -44,6 +44,22 @@ export const User = sequelize.define('User', {
     }
 });
 
+export const Role = sequelize.define('Role', {
+    roleId: {
+        type: Sequelize.DataTypes.STRING,
+        primaryKey: true
+    },
+    name: {
+        type: Sequelize.DataTypes.STRING,
+        allowNull: false
+    },
+    percentageCut: {
+        type: Sequelize.DataTypes.INTEGER,
+        defaultValue: 0,
+        allowNull: false
+    }
+});
+
 (async () => {
     await sequelize.sync({ alter: true });
 })();
