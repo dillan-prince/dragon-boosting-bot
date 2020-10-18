@@ -14,26 +14,19 @@ const jwtClient = new google.auth.JWT(
     ['https://www.googleapis.com/auth/spreadsheets']
 );
 
+const getNowFormatted = () =>
+    new Intl.DateTimeFormat('en-US', {
+        dateStyle: 'short',
+        timeStyle: 'medium',
+        timeZone: 'America/New_York'
+    }).format(new Date());
+
 export const writeToDebitsSheet = (rowData) => {
-    writeToSheet('Debits', [
-        new Intl.DateTimeFormat('en-US', {
-            dateStyle: 'short',
-            timeStyle: 'medium',
-            timeZone: 'America/New_York'
-        }).format(new Date()),
-        ...rowData
-    ]);
+    writeToSheet('Debits', [getNowFormatted(), ...rowData]);
 };
 
 export const writeToCreditsSheet = (rowData) => {
-    writeToSheet('Credits', [
-        new Intl.DateTimeFormat('en-US', {
-            dateStyle: 'short',
-            timeStyle: 'medium',
-            timeZone: 'America/New_York'
-        }).format(new Date()),
-        ...rowData
-    ]);
+    writeToSheet('Credits', [getNowFormatted(), ...rowData]);
 };
 
 export const writeToSheet = async (sheetName, values) => {
