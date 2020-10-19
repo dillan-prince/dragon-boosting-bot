@@ -4,17 +4,19 @@ import { hasPermission } from '../services/permissionsService.js';
 import {
     DUNGEON_BOOSTER_PERCENTAGE_CUT,
     RAID_BOOSTER_PERCENTAGE_CUT,
-    BOOSTER_PERCENTAGE_DISCOUNT
+    BOOSTER_PERCENTAGE_DISCOUNT,
+    embedColors
 } from '../common/constants.js';
+import { getServerUsername } from '../services/utilities.js';
 
 export const validateArguments = (args) => {
     if (args.length < 5) {
         throw new Error('Expected at least 5 arguments.');
     }
 
-    const [customerName, goldAmount, realm, runType, ...boosterNames] = args;
+    let [customerName, goldAmount, realm, runType, ...boosterNames] = args;
 
-    if (!parseInt(goldAmount)) {
+    if (parseFloat(goldAmount) % 1 !== 0) {
         throw new Error(
             `Expected an integer for the gold amount; received "${goldAmount}"`
         );
@@ -26,6 +28,7 @@ export const validateArguments = (args) => {
         );
     } else {
         const [, faction] = realm.split('-');
+
         if (!['a', 'h'].includes(faction.toLowerCase())) {
             throw new Error(
                 `Expected faction part of realm argument to be "A" or "H"; received "${faction}"`
@@ -35,12 +38,13 @@ export const validateArguments = (args) => {
 
     if (!['bm+', 'm+', 'raid', 'pvp'].includes(runType.toLowerCase())) {
         throw new Error(
-            `Expected run type to be one of "M+", "Raid", or "PvP"; received "${runType}"`
+            `Expected run type to be one of "BM+", "M+", "Raid", or "PvP"; received "${runType}"`
         );
     } else {
         switch (runType.toLowerCase()) {
             case 'bm+':
             case 'm+':
+                runType = runType.toUpperCase();
                 if (boosterNames.length !== 4) {
                     throw new Error(
                         `Expected 4 booster name arguments; received ${boosterNames.length}`
@@ -48,6 +52,7 @@ export const validateArguments = (args) => {
                 }
                 break;
             case 'raid':
+                runType = 'Raid';
                 if (boosterNames.length !== 1) {
                     throw new Error(
                         `Expected 1 booster name argument; received ${boosterNames.length}`
@@ -55,6 +60,7 @@ export const validateArguments = (args) => {
                 }
                 break;
             case 'pvp':
+                runType = 'PvP';
                 if (![1, 2].includes(boosterNames.length)) {
                     throw new Error(
                         `Expected 1 or 2 booster name arguments; received ${boosterNames.length}`
@@ -90,7 +96,7 @@ export const validateArguments = (args) => {
     };
 };
 
-const upsertUserBalance = async (userId, addAmount) => {
+const upsertUserBalance = async (message, userId, addAmount) => {
     const user = await User.findOne({
         where: { userId }
     });
@@ -101,6 +107,13 @@ const upsertUserBalance = async (userId, addAmount) => {
         user.balance += addAmount;
         await user.save();
     }
+
+    await message.guild.members.cache
+        .get(userId)
+        .send(
+            `Added ${addAmount}K to your balance as a result of a completed run. \n` +
+                `New balance is ${user.balance}K.`
+        );
 };
 
 const getBoosterPercentageCut = (runType) => {
@@ -111,7 +124,20 @@ const getBoosterPercentageCut = (runType) => {
         case 'raid':
             return RAID_BOOSTER_PERCENTAGE_CUT;
         case 'pvp':
+        default:
+            return 0;
+    }
+};
 
+const getEmbedColor = (runType) => {
+    switch (runType.toLowerCase()) {
+        case 'bm+':
+            return embedColors.gold;
+        case 'm+':
+            return embedColors.blue;
+        case 'raid':
+            return embedColors.green;
+        case 'pvp':
         default:
             return 0;
     }
@@ -147,23 +173,104 @@ export const addrunCommand = async (message, args) => {
 
         const validatedArgs = validateArguments(args);
         const { goldAmount, realm, runType, boosterUserIds } = validatedArgs;
+        let { customerName } = validatedArgs;
+
+        if (customerName.startsWith('<@') && customerName.endsWith('>')) {
+            let customerUserId = customerName.slice(2, -1);
+
+            if (customerUserId.startsWith('!')) {
+                customerUserId = customerUserId.slice(1);
+            }
+
+            customerName = getServerUsername(message, customerUserId);
+        }
+
+        const embed = {
+            color: getEmbedColor(runType),
+            title: `${runType} boost posted by ${getServerUsername(
+                message,
+                message.author.id
+            )}`,
+            description: 'Reply "yes" to confirm',
+            fields: [
+                {
+                    name: 'Advertiser',
+                    value: getServerUsername(message, message.author.id),
+                    inline: true
+                },
+                {
+                    name: 'Customer',
+                    value: customerName,
+                    inline: true
+                },
+                {
+                    name: 'Type',
+                    value: runType,
+                    inline: true
+                },
+                {
+                    name: 'Realm',
+                    value: realm
+                },
+                {
+                    name: 'Amount',
+                    value: `${goldAmount}K`
+                },
+                {
+                    name: 'Boosters',
+                    value: boosterUserIds
+                        .map((userId) => `<@${userId}>`)
+                        .join(', ')
+                }
+            ]
+        };
+
+        const embeddedMessage = await message.channel.send({
+            embed
+        });
+
+        let confirmationResponse = null;
+        let confirmed = false;
+        await message.channel.awaitMessages(
+            async (response) => {
+                if (
+                    response.author.id === message.author.id &&
+                    response.content.toLowerCase() === 'yes'
+                ) {
+                    confirmationResponse = response;
+                    return (confirmed = true);
+                }
+            },
+            {
+                max: 1,
+                time: 60000
+            }
+        );
+
+        if (!confirmed) {
+            await message.reply('did not receive confirmation. Aborting.');
+            message.delete();
+            return embeddedMessage.delete();
+        }
 
         let { percentageCut: advertiserPercentageCut } = (await Role.findOne({
             where: {
-                name: message.channel.guild.members.cache
-                    .get(message.author.id)
-                    ._roles.map(
-                        (roleId) =>
-                            message.channel.guild.roles.cache.get(roleId).name
-                    )
-                    .find((roleName) =>
-                        [
-                            'White Dragon',
-                            'Blue Dragon',
-                            'Green Dragon',
-                            'Red Dragon'
-                        ].includes(roleName)
-                    )
+                name:
+                    message.channel.guild.members.cache
+                        .get(message.author.id)
+                        ._roles.map(
+                            (roleId) =>
+                                message.channel.guild.roles.cache.get(roleId)
+                                    .name
+                        )
+                        .find((roleName) =>
+                            [
+                                'White Dragon',
+                                'Blue Dragon',
+                                'Green Dragon',
+                                'Red Dragon'
+                            ].includes(roleName)
+                        ) || ''
             }
         })) || { percentageCut: 0 };
 
@@ -172,42 +279,36 @@ export const addrunCommand = async (message, args) => {
         }
 
         await upsertUserBalance(
+            message,
             message.author.id,
-            (goldAmount * advertiserPercentageCut) / 100
+            Math.floor((goldAmount * advertiserPercentageCut) / 100)
         );
 
         const boosterPercentageCut = getBoosterPercentageCut(runType);
         for (const boosterUserId of boosterUserIds) {
             await upsertUserBalance(
+                message,
                 boosterUserId,
-                (goldAmount * boosterPercentageCut) / 100
+                Math.floor((goldAmount * boosterPercentageCut) / 100)
             );
         }
 
-        let { customerName } = validatedArgs;
-        if (customerName.startsWith('<@') && customerName.endsWith('>')) {
-            customerName = customerName.slice(2, -1);
-
-            if (customerName.startsWith('!')) {
-                customerName = customerName.slice(1);
-            }
-
-            const member = message.guild.members.cache.get(customerName);
-            customerName = member.nickname || member.user.username;
-        }
-
         writeToCreditsSheet([
-            message.author.username,
+            getServerUsername(message, message.author.id),
             customerName,
             realm,
             goldAmount,
             runType,
-            ...boosterUserIds.map((userId) => {
-                const member = message.guild.members.cache.get(userId);
-                return member.nickname || member.user.username;
-            })
+            ...boosterUserIds.map((userId) =>
+                getServerUsername(message, userId)
+            )
         ]);
+
+        message.delete();
+        confirmationResponse.delete();
+        embeddedMessage.edit({ embed: { ...embed, description: '' } });
     } catch (error) {
+        message.delete();
         message.channel.send(error.toString());
     }
 };

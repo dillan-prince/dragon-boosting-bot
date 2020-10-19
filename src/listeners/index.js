@@ -3,7 +3,8 @@ import {
     addrunCommand,
     allBalancesCommand,
     balanceCommand,
-    removeCommand
+    removeCommand,
+    strikeCommand
 } from '../commands/index.js';
 import { COMMAND_PREFIX } from '../common/constants.js';
 
@@ -34,6 +35,9 @@ export const onMessage = (message) => {
             break;
         case 'allbalances':
             allBalancesCommand(message, args);
+            break;
+        case 'strike':
+            strikeCommand(message, args);
             break;
     }
 };

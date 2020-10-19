@@ -63,7 +63,7 @@ describe('AddRun', () => {
         }
     });
 
-    it('should throw an error if run type is not "M+", "Raid", or "PvP"', () => {
+    it('should throw an error if run type is not "BM+", "M+", "Raid", or "PvP"', () => {
         try {
             validateArguments([
                 'CustomerName',
@@ -75,7 +75,7 @@ describe('AddRun', () => {
         } catch (error) {
             assert(
                 error.toString() ===
-                    'Error: Expected run type to be one of "M+", "Raid", or "PvP"; received "type"'
+                    'Error: Expected run type to be one of "BM+", "M+", "Raid", or "PvP"; received "type"'
             );
         }
     });

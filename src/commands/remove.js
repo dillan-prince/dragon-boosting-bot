@@ -51,7 +51,7 @@ export const validateArguments = (args) => {
  *      [Recipient Name]
  *      [Gold Amount in Thousands]
  */
-export const removeCommand = async (message, args) => {
+export const removeCommand = async (message, args, doDelete = true) => {
     try {
         if (!hasPermission(message, ['Gold Dragon', 'Chromatic Dragon'])) {
             return message.reply('you are not allowed to use this command.');
@@ -77,12 +77,17 @@ export const removeCommand = async (message, args) => {
             .send(
                 `${message.author.username} removed ${goldAmount}K from your balance. New balance is ${user.balance}K. Reason: ${reason}`
             );
-        message.delete();
 
         const authorName = message.author.username;
         const mentionName = message.mentions.users.get(userId).username;
 
         writeToDebitsSheet([authorName, mentionName, -goldAmount, reason]);
+
+        if (doDelete) {
+            message.delete();
+        }
+
+        return { userId, goldAmount, reason };
     } catch (error) {
         message.channel.send(error.toString());
     }
