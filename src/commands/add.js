@@ -58,12 +58,12 @@ export const addCommand = async (message, args) => {
 
         const { userId, goldAmount, reason } = validateArguments(args);
 
-        const user = await User.findOne({
+        let user = await User.findOne({
             where: { userId }
         });
 
         if (!user) {
-            await User.create({
+            user = await User.create({
                 userId,
                 balance: goldAmount
             });
