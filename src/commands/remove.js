@@ -1,6 +1,7 @@
 import { User } from '../database/dbConnection.js';
 import { writeToDebitsSheet } from '../services/googleSheetsService.js';
 import { hasPermission } from '../services/permissionsService.js';
+import { getServerUsername } from '../services/utilities.js';
 
 export const validateArguments = (args) => {
     if (args.length < 2) {
@@ -78,7 +79,7 @@ export const removeCommand = async (message, args, doDelete = true) => {
                 `${message.author.username} removed ${goldAmount}K from your balance. New balance is ${user.balance}K. Reason: ${reason}`
             );
 
-        const authorName = message.author.username;
+        const authorName = getServerUsername(message, message.author.id);
         const mentionName = message.mentions.users.get(userId).username;
 
         writeToDebitsSheet([authorName, mentionName, -goldAmount, reason]);
