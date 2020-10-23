@@ -2,6 +2,7 @@ import Sequelize from 'sequelize';
 
 import { User } from '../database/dbConnection.js';
 import { hasPermission } from '../services/permissionsService.js';
+import { getServerUsername } from '../services/utilities.js';
 
 export const validateArguments = (args) => {
     return args.map((mentionedUsername) => {
@@ -39,18 +40,36 @@ export const allBalancesCommand = async (message, args) => {
 
         const users = await User.findAll(query);
 
-        message.author.send([
-            '```',
-            `${'Server Username'.padEnd(30, ' ')} | Balance`,
-            ...users.map(
-                ({ userId, balance }) =>
-                    `${(
-                        message.guild.members.cache.get(userId).nickname ||
-                        message.guild.members.cache.get(userId).user.username
-                    ).padEnd(30, ' ')} | ${balance}K`
-            ),
-            '```'
-        ]);
+        if (users.length === 0) {
+            message.author.send('Not currently tracking any balances.');
+        } else {
+            const usernames = [];
+            const balances = [];
+
+            users.map(({ userId, balance }) => {
+                usernames.push(getServerUsername(message, userId));
+                balances.push(balance);
+            });
+
+            message.author.send({
+                embed: {
+                    title: 'All Balances',
+                    fields: [
+                        {
+                            name: 'Server Username',
+                            value: usernames.join('\n'),
+                            inline: true
+                        },
+                        {
+                            name: 'Balance',
+                            value: balances.join('\n'),
+                            inline: true
+                        }
+                    ]
+                }
+            });
+        }
+
         message.delete();
     } catch (error) {
         message.channel.send(error.toString());
