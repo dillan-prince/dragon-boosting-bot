@@ -80,7 +80,7 @@ export const removeCommand = async (message, args, doDelete = true) => {
             );
 
         const authorName = getServerUsername(message, message.author.id);
-        const mentionName = message.mentions.users.get(userId).username;
+        const mentionName = getServerUsername(message, userId);
 
         writeToDebitsSheet([authorName, mentionName, -goldAmount, reason]);
 
