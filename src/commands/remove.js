@@ -76,7 +76,11 @@ export const removeCommand = async (message, args, doDelete = true) => {
         message.mentions.users
             .get(userId)
             .send(
-                `${message.author.username} removed ${goldAmount}K from your balance. New balance is ${user.balance}K. Reason: ${reason}`
+                `${
+                    message.author.username
+                } removed ${goldAmount}K from your balance. New balance is ${
+                    user.balance
+                }K. Reason: ${reason || 'No reason given.'}`
             );
 
         const authorName = getServerUsername(message, message.author.id);

@@ -75,7 +75,11 @@ export const addCommand = async (message, args) => {
         message.mentions.users
             .get(userId)
             .send(
-                `${message.author.username} added ${goldAmount}K to your balance. New balance is ${user.balance}K. Reason: ${reason}`
+                `${
+                    message.author.username
+                } added ${goldAmount}K to your balance. New balance is ${
+                    user.balance
+                }K. Reason: ${reason || 'No reason given.'}`
             );
         message.delete();
     } catch (error) {
