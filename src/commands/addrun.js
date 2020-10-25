@@ -253,7 +253,10 @@ export const addrunCommand = async (message, args) => {
             return embeddedMessage.delete();
         }
 
-        let { percentageCut: advertiserPercentageCut } = (await Role.findOne({
+        let {
+            name: roleName,
+            percentageCut: advertiserPercentageCut
+        } = (await Role.findOne({
             where: {
                 name:
                     message.channel.guild.members.cache
@@ -295,6 +298,7 @@ export const addrunCommand = async (message, args) => {
 
         writeToCreditsSheet([
             getServerUsername(message, message.author.id),
+            roleName,
             customerName,
             realm,
             goldAmount,
