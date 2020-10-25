@@ -158,16 +158,16 @@ const getEmbedColor = (runType) => {
  */
 export const addrunCommand = async (message, args) => {
     try {
-        if (
-            !hasPermission(message, [
-                'White Dragon',
-                'Blue Dragon',
-                'Green Dragon',
-                'Red Dragon',
-                'Gold Dragon',
-                'Chromatic Dragon'
-            ])
-        ) {
+        const permittedRoles = [
+            'White Dragon',
+            'Blue Dragon',
+            'Green Dragon',
+            'Red Dragon',
+            'Gold Dragon',
+            'Chromatic Dragon'
+        ];
+
+        if (!hasPermission(message, permittedRoles)) {
             return message.reply('you are not allowed to use this command.');
         }
 
@@ -256,26 +256,17 @@ export const addrunCommand = async (message, args) => {
         let {
             name: roleName,
             percentageCut: advertiserPercentageCut
-        } = (await Role.findOne({
+        } = await Role.findOne({
             where: {
-                name:
-                    message.channel.guild.members.cache
-                        .get(message.author.id)
-                        ._roles.map(
-                            (roleId) =>
-                                message.channel.guild.roles.cache.get(roleId)
-                                    .name
-                        )
-                        .find((roleName) =>
-                            [
-                                'White Dragon',
-                                'Blue Dragon',
-                                'Green Dragon',
-                                'Red Dragon'
-                            ].includes(roleName)
-                        ) || ''
+                name: message.channel.guild.members.cache
+                    .get(message.author.id)
+                    ._roles.map(
+                        (roleId) =>
+                            message.channel.guild.roles.cache.get(roleId).name
+                    )
+                    .find((roleName) => permittedRoles.includes(roleName))
             }
-        })) || { percentageCut: 0 };
+        });
 
         if (runType.toLowerCase() === 'bm+') {
             advertiserPercentageCut -= BOOSTER_PERCENTAGE_DISCOUNT;
