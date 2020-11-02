@@ -111,7 +111,10 @@ const upsertUserBalance = async (message, userId, addAmount) => {
     await message.guild.members.cache
         .get(userId)
         .send(
-            `Added ${addAmount}K to your balance as a result of a completed run. \n` +
+            `${getServerUsername(
+                message,
+                message.author.id
+            )} added ${addAmount}K to your balance as a result of a completed run. \n` +
                 `New balance is ${user.balance}K.`
         );
 };
