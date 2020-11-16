@@ -1,5 +1,5 @@
 import { User } from '../database/dbConnection.js';
-import { writeToDebitsSheet } from '../services/googleSheetsService.js';
+import { writeToAddRemoveSheet } from '../services/googleSheetsService.js';
 import { hasPermission } from '../services/permissionsService.js';
 import { getServerUsername } from '../services/utilities.js';
 
@@ -86,7 +86,7 @@ export const removeCommand = async (message, args, doDelete = true) => {
         const authorName = getServerUsername(message, message.author.id);
         const mentionName = getServerUsername(message, userId);
 
-        writeToDebitsSheet([authorName, mentionName, -goldAmount, reason]);
+        writeToAddRemoveSheet([authorName, mentionName, -goldAmount, reason]);
 
         if (doDelete) {
             message.delete();

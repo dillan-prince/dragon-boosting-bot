@@ -1,5 +1,5 @@
 import { User, Role } from '../database/dbConnection.js';
-import { writeToCreditsSheet } from '../services/googleSheetsService.js';
+import { writeToAddRunSheet } from '../services/googleSheetsService.js';
 import { hasPermission } from '../services/permissionsService.js';
 import {
     DUNGEON_BOOSTER_PERCENTAGE_CUT,
@@ -299,7 +299,7 @@ export const addrunCommand = async (message, args) => {
             );
         }
 
-        writeToCreditsSheet([
+        writeToAddRunSheet([
             getServerUsername(message, message.author.id),
             roleName,
             customerName,

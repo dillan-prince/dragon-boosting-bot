@@ -1,5 +1,7 @@
 import { User } from '../database/dbConnection.js';
+import { writeToAddRemoveSheet } from '../services/googleSheetsService.js';
 import { hasPermission } from '../services/permissionsService.js';
+import { getServerUsername } from '../services/utilities.js';
 
 export const validateArguments = (args) => {
     if (args.length < 2) {
@@ -81,6 +83,12 @@ export const addCommand = async (message, args) => {
                     user.balance
                 }K. Reason: ${reason || 'No reason given.'}`
             );
+
+        const authorName = getServerUsername(message, message.author.id);
+        const mentionName = getServerUsername(message, userId);
+
+        writeToAddRemoveSheet([authorName, mentionName, goldAmount, reason]);
+
         message.delete();
     } catch (error) {
         message.channel.send(error.toString());

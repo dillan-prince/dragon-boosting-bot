@@ -21,12 +21,12 @@ const getNowFormatted = () =>
         timeZone: 'America/New_York'
     }).format(new Date());
 
-export const writeToDebitsSheet = (rowData) => {
-    writeToSheet('Debits', [getNowFormatted(), ...rowData]);
+export const writeToAddRunSheet = (rowData) => {
+    writeToSheet('AddRun', [getNowFormatted(), ...rowData]);
 };
 
-export const writeToCreditsSheet = (rowData) => {
-    writeToSheet('Credits', [getNowFormatted(), ...rowData]);
+export const writeToAddRemoveSheet = (rowData) => {
+    writeToSheet('Add/Remove', [getNowFormatted(), ...rowData]);
 };
 
 export const writeToSheet = async (sheetName, values) => {
